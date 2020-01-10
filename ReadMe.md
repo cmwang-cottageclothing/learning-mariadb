@@ -15,20 +15,20 @@ docker pull mariadb
 Then I can create a container running a mariadb server. Use the following command:
 
 ```shell
-docker run --name=test-mariadb mariadb
+docker run --name=learning-mariadb mariadb
 ```
 Oops, I get error messages that tell me to specify one of MYSQL_ROOT_PASSWORD, MYSQL_ALLOW_EMPTY_PASSWORD and MYSQL_RANDOM_ROOT_PASSWORD environment variables.
 
 I choose the set MYSQL_ROOT_PASSWORD with the following command.
 
 ```shell
-docker run --name=test-mariadb --env="MYSQL_ROOT_PASSWORD=your-passworkd" mariadb
+docker run --name=learning-mariadb-server --env="MYSQL_ROOT_PASSWORD=your-password" mariadb
 ```
 
 But this time docker complains that this container name is already in use. I remove the container that uses the same name.
 
 ```shell
-docker container rm learning-mariadb
+docker container rm learning-mariadb-server
 ```
 Then run the container again. Now, I have a running mariadb server.
 
@@ -52,8 +52,49 @@ docker network create learning-mariadb-network
 
 This command create a `bridge` network (which is a default network when not specifying the `network` type).
 
-Then start a mariadb server container and attach this container to the network called `learning-mariadb-network`.
+Start a mariadb server container and attach this container to the network called `learning-mariadb-network`.
 
 ```shell
-docker run --name=learning-mariadb-server --env="MYSQL_ROOT_PASSWORD=your-password" --network learning-mariadb-network mariadb
+docker run --name=learning-mariadb-server\\
+--detach \\
+--env="MYSQL_ROOT_PASSWORD=your-password" \\
+--network learning-mariadb-network \\
+mariadb
 ```
+
+It is better to run the container in background. `--detach` is thus used.
+
+Now, I can create another container which runs only mariadb client to connect to the mariadb server.
+
+```shell
+docker run -it --rm \\
+--name=learning-mariadb-client \\
+--network learning-mariadb-network \\
+mariadb \\
+mysql -u root -h learning-mariadb-server -p"
+```
+
+The option `--network` attach this container, whose name is learning-mariadb-client, to a network call `learning-mariadb-network`.
+
+The last part of the command:
+
+```shell
+mysql -u root -h learning-mariadb-server -p
+```
+
+tells the container to run the command `mysql` with the options
+
+```shell
+-u root -h learning-mariadb-server -p
+```
+
+The key point of these options is:
+```shell
+-h learning-mariadb-server
+```
+
+This option tells `mysql` (the mariadb-client) to connect to a host named `learning-mariadb-server`. This host name, in fact, is identical to the name of the container
+(given by using `--name` ) running a mariadb server. Docker network helps in resolving host names.
+
+Now I have a mariadb-server and a mariadb-client. However, the story does not end here.
+
