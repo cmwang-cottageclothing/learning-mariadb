@@ -98,3 +98,65 @@ This option tells `mysql` (the mariadb-client) to connect to a host named `learn
 
 Now I have a mariadb-server and a mariadb-client. However, the story does not end here.
 
+The first thing I tried to do is to add a user to the mariadb-server. Add a  user by this command:
+
+```shell
+GRANT ALL ON *.* TO 'cmwang'@'%' IDENTIFIED BY 'your-password';
+```
+
+After creating a user `cmwang`, list the users by the following command:
+
+```shell
+SELECT User, Host FROM mysql.user
+```
+
+
+User | Host
+-----|----
+cmwang | %
+ root|% |
+ root | localhost |
+
+Then remove the mariadb-server and mariadb-client containers. Run the above process again to create a mariadb-server, and to connect to the mariadb-server using a mariadb-client. List the users again. Oops, I found that there is no user named `cmwang`. The mariadb-server remains in the initial state!!!
+
+The problem is obvious that I did not store the data persistently. When a mariadb-server container is created, an anonymous data volume is also created. When this mariadb-server container is removed, the anonymous data volume still exists in the system. All the changes I made to the mariadb-server are written to the anonymous volume. But when I create another new mariadb-server container without mounting the anonymous data volume, all changes I made with the previous mariadb-server seems to lost forever (in fact, it is not).
+
+It is easy to solve this problem (after I did some research :p for about an hour). First, for convenience, add a name volume by this command:
+
+```shell
+docker volume create your-volume-name
+```
+
+Mount the named volume when creating a **new** mariadb-server container by using the option `-v`. Then you can store the data persistently.
+
+It is clear until now. To run a mariadb for development, three items are needed. A mariadb-server, of course, a mariadb-client for connecting to the mariadb-server, and data volume for storing data persistently.
+
+One more thing. Another caveat.
+When you already have a data volume with existing data, you do not have to use `MYSQL_ROOT_PASSWORD` to run a mariadb-server. In the official document, it is said that this option will be ignored in any case and the pre-existing database will not be changed in any way.
+
+Thus to run a mariadb-server against an existing database, using the following command:
+
+```shell
+docker run --detach \
+--name=your-container-name \
+-v learning-mariadb-dbdata:/var/lib/mysql \
+--network learning-mariadb-network \
+mariadb
+```
+
+**Wait for a while**
+
+MariaDB [(none)]> SELECT User, Host FROM mysql.user;
+
+User | Host
+-----|----
+ root|% |
+ root | localhost |
+
+
+User | Host
+-----|----
+cmwang | %
+ root|% |
+ root | localhost |
+ 
