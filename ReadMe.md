@@ -4,7 +4,7 @@ Now it is time for me to begin to seriously learn a database. I know the theory 
 
 I grabbed a [Learning MySQL and MariaDB](https://www.amazon.com/Learning-MySQL-MariaDB-Heading-Direction-dp-1449362907/dp/1449362907/ref=mt_paperback?_encoding=UTF8&me=&qid=), and decide to read from the first page to the last page. Try to familiarize myself with mariadb by completing all the exercises.
 
-The first task is to install mariadb. As usual, I don't want to install mariadb locally, because I would like to keep my local environment as simple as possible. Therefore using Docker is one feasible solution.
+The first task is to install mariadb. As usual, I don't want to install mariadb locally, because I would like to keep my local environment as simple as possible. Therefore using Docker is my option.
 
 First of all, pull the official image of mariadb.
 
@@ -17,9 +17,11 @@ Then I can create a container running a mariadb server. Use the following comman
 ```shell
 docker run --name=learning-mariadb mariadb
 ```
+
 Oops, I get error messages that tell me to specify one of MYSQL_ROOT_PASSWORD, MYSQL_ALLOW_EMPTY_PASSWORD and MYSQL_RANDOM_ROOT_PASSWORD environment variables.
 
-I choose the set MYSQL_ROOT_PASSWORD with the following command.
+I choose to+
+ set MYSQL_ROOT_PASSWORD with the following command.
 
 ```shell
 docker run --name=learning-mariadb-server --env="MYSQL_ROOT_PASSWORD=your-password" mariadb
@@ -134,7 +136,7 @@ It is clear until now. To run a mariadb for development, three items are needed.
 One more thing. Another caveat.
 When you already have a data volume with existing data, you do not have to use `MYSQL_ROOT_PASSWORD` to run a mariadb-server. In the official document, it is said that this option will be ignored in any case and the pre-existing database will not be changed in any way.
 
-Thus to run a mariadb-server against an existing database, using the following command:
+Thus to run a mariadb-server container against an existing database, using the following command:
 
 ```shell
 docker run --detach \
@@ -144,7 +146,13 @@ docker run --detach \
 mariadb
 ```
 
-**Wait for a while**
+One other trivial caveat
+
+When a whole new mariadb-server container is initialized without an existing database, a default database will be created. No connection can be made during the initialization period. If you want to connect to the mariadb-server, please wait till the end of the initialization.
+
+Summary
+
+If you want to 
 
 MariaDB [(none)]> SELECT User, Host FROM mysql.user;
 
