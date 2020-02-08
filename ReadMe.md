@@ -73,7 +73,7 @@ docker run -it --rm \\
 --name=learning-mariadb-client \\
 --network learning-mariadb-network \\
 mariadb \\
-mysql -u root -h learning-mariadb-server -p"
+mysql -u root -h learning-mariadb-server -p
 ```
 
 The option `--network` attach this container, whose name is learning-mariadb-client, to a network call `learning-mariadb-network`.
@@ -91,6 +91,7 @@ tells the container to run the command `mysql` with the options
 ```
 
 The key point of these options is:
+
 ```shell
 -h learning-mariadb-server
 ```
@@ -152,19 +153,47 @@ When a whole new mariadb-server container is initialized without an existing dat
 
 Summary
 
-If you want to 
+If you want to Docker to run a mariadb for local development, here is what you needed:
 
-MariaDB [(none)]> SELECT User, Host FROM mysql.user;
+1. create a network
 
-User | Host
------|----
- root|% |
- root | localhost |
+```shell
+docker network create learning-mariadb-network
+```
 
+2. create a named volume
 
-User | Host
------|----
-cmwang | %
- root|% |
- root | localhost |
+```shell
+docker volume create learning-mariadb-dbdata
+```
+
+3. run a mariadb-server container for the first time
+
+```shell
+docker run --name=learning-mariadb-server\\
+--detach \\
+--env="MYSQL_ROOT_PASSWORD=your-password" \\
+--network learning-mariadb-network \\
+mariadb
+```
+
+4. now you can use another container running mariadb-client to connect to the mariadb-server
+
+```shell
+docker run -it --rm \\
+--name=learning-mariadb-client \\
+--network learning-mariadb-network \\
+mariadb \\
+mysql -u root -h learning-mariadb-server -p
+```
+
+5. when your data volume completes initialization, you can omit some environment options to run a mariadb-sever container against existing database(s)
+
+```shell
+docker run --detach \\
+--name=your-container-name \\
+-v learning-mariadb-dbdata:/var/lib/mysql \\
+--network learning-mariadb-network \\
+mariadb
+```
  
