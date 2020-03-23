@@ -50,7 +50,7 @@ AFTER family_id;
 
 ```
 
-When I was trying the `MODIFY COLUMN` command, MariaDB emmitted the above error code.
+When I was trying the `MODIFY COLUMN` command, MariaDB emitted the above error code.
 
 I googled and found one possible solution. First I set the value of the column `endangered` to 1.
 
@@ -58,4 +58,10 @@ I googled and found one possible solution. First I set the value of the column `
 UPDATE birds SET endangered = 1;
 ```
 
-Then try the `MODIFY COLUMN` again.
+Then I tried the `MODIFY COLUMN` again. This time the command did not cause the error.
+
+It should be mentioned here. In this circumstance, the **column endangered** originally stores data of type `BIT`. The `MODIFY COLUMN` command change the data type to `ENUM`. In the above SQL script, before `MODIFY COLUMN` command, the data stored in **column endangered** is of type `BIT`. The values of **column endangered** in rows 3 and 6 are `1`. Values in remaining rows are `0`.
+
+I am not sure whether the `MODIFY COLUMN` will delete the data, but I observed that the **column endangered** store `Extinct` in all rows after the `MODIFY COLUMN`. The `MODIFY COLUMN` seems not to delete data.
+
+Since no data is
